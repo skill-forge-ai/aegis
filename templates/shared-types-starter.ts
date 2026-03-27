@@ -1,31 +1,41 @@
 // contracts/shared-types.ts
-// ⚠️ AUTO-GENERATED from api-spec.yaml — DO NOT EDIT MANUALLY
-// Regenerate: bash scripts/generate-types.sh <project-path>
+// ⚠️ Single source of truth for shared type definitions.
+// Keep in sync with api-spec.yaml.
+// When using code generation, mark as AUTO-GENERATED.
 
-// --- Common Types ---
+// === Base Types ===
 
-export interface ApiResponse<T = unknown> {
+export interface ApiResponse<T> {
   success: boolean;
-  data?: T;
+  data: T;
   error?: ApiError;
 }
 
 export interface ApiError {
-  /** Error code from errors.yaml */
+  /** Error code — must match codes in errors.yaml */
   code: string;
+  /** Human-readable error message */
   message: string;
 }
 
-export interface Pagination {
+export interface PaginatedResponse<T> extends ApiResponse<T[]> {
+  pagination: PaginationMeta;
+}
+
+export interface PaginationMeta {
   page: number;
   pageSize: number;
   total: number;
 }
 
-export interface PaginatedResponse<T> extends ApiResponse<T[]> {
-  pagination: Pagination;
-}
+// === Domain Types ===
+// Add your domain-specific types below.
+// These should mirror the schemas in api-spec.yaml.
 
-// --- Domain Types ---
-// Add project-specific types below.
-// These should match the schemas defined in api-spec.yaml.
+// Example:
+// export interface User {
+//   id: string;
+//   username: string;
+//   email: string;
+//   createdAt: string; // ISO 8601
+// }

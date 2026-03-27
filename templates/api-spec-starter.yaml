@@ -4,19 +4,21 @@ info:
   version: "0.1.0"
   description: |
     API contract for {Project Name}.
-    This is the single source of truth — all implementations must conform.
+    This is the single source of truth for all API endpoints.
+    
+    ⚠️ Do not modify without going through Contract Change Protocol.
 
 servers:
   - url: http://localhost:8080
     description: Local development
-  - url: https://api.example.com
+  - url: "{production-url}"
     description: Production
 
 paths:
-  /health:
+  /api/health:
     get:
+      summary: Health check
       operationId: healthCheck
-      summary: Health check endpoint
       tags: [system]
       responses:
         "200":
@@ -34,29 +36,26 @@ paths:
                     format: date-time
                 required: [status, timestamp]
 
-  # --- Add your API endpoints below ---
-  # /api/v1/resource:
+  # Add your endpoints here following this pattern:
+  # /api/resource:
   #   get:
-  #     operationId: listResources
   #     summary: List resources
+  #     operationId: listResources
   #     tags: [resources]
   #     parameters:
   #       - name: page
   #         in: query
   #         schema:
   #           type: integer
-  #           minimum: 1
   #           default: 1
   #       - name: pageSize
   #         in: query
   #         schema:
   #           type: integer
-  #           minimum: 1
-  #           maximum: 100
   #           default: 20
   #     responses:
   #       "200":
-  #         description: Paginated list of resources
+  #         description: Success
   #         content:
   #           application/json:
   #             schema:
@@ -84,7 +83,7 @@ components:
           type: string
       required: [code, message]
 
-    Pagination:
+    PaginationMeta:
       type: object
       properties:
         page:
@@ -95,12 +94,11 @@ components:
           type: integer
       required: [page, pageSize, total]
 
-  securitySchemes:
-    apiKey:
-      type: apiKey
-      in: header
-      name: X-API-Key
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
+  # securitySchemes:
+  #   bearerAuth:
+  #     type: http
+  #     scheme: bearer
+  #     bearerFormat: JWT
+
+# security:
+#   - bearerAuth: []

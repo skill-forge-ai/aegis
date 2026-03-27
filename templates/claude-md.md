@@ -1,115 +1,91 @@
 # CLAUDE.md — {Project Name}
 
 ## Project Overview
-
-<!-- One paragraph: what this project is, who it serves. -->
+<!-- One paragraph: what is this project, who is it for -->
 
 ## Architecture
+<!-- From Design Brief: key modules, data flow, dependencies -->
 
-<!-- From Design Brief: key modules, data flow, dependencies. Keep it concise —
-     CC should understand the system shape, not every detail. -->
-
-## ⛔ Hard Constraints (violate = PR rejected)
-
-<!-- These are non-negotiable. CC must follow them or the work gets rejected. -->
+## ⛔ Hard Constraints (violate = reject)
 
 - All API responses MUST conform to `contracts/api-spec.yaml`
-- Shared types MUST be imported from `contracts/shared-types.ts` — never redefine locally
-- Error codes MUST use `contracts/errors.yaml` definitions
+- Shared types MUST be imported from `contracts/shared-types.ts` — no local redefinitions
+- Error codes MUST use codes defined in `contracts/errors.yaml`
 - Database migrations MUST be reversible
-- No business logic in controller/handler layer (controller → service → repository)
+- No business logic in controller layer (controller → service → repository)
 - No hardcoded environment variable values
-- No `any` type in TypeScript (use `unknown` + type guards if needed)
-- All public APIs MUST have JSDoc/docstring
+- No `any` type (TypeScript) / equivalent escape hatches without justification
 
 ## 📋 Code Standards
 
-### Naming
-
-- Files: `kebab-case.ts` / `snake_case.go`
-- Functions/methods: `camelCase` (TS) / `PascalCase` exported, `camelCase` unexported (Go)
-- Constants: `UPPER_SNAKE_CASE`
-- Database fields: `snake_case`
+### Naming Conventions
+- Files: kebab-case
+- Functions/variables: camelCase (TS/JS) / snake_case (Python/Go)
+- Database fields: snake_case
+- Constants: UPPER_SNAKE_CASE
 
 ### Directory Structure
-
-<!-- Define the canonical project structure CC should follow -->
-
-```
-src/
-├── handlers/          # HTTP handlers (thin — delegate to services)
-├── services/          # Business logic
-├── repositories/      # Data access
-├── models/            # Domain models
-├── middleware/         # Auth, logging, error handling
-├── utils/             # Shared utilities
-└── config/            # Configuration loading
-```
+<!-- Project-specific directory layout and responsibilities -->
 
 ### Import Order
-
 1. Standard library
-2. External dependencies
-3. Internal packages (absolute paths)
+2. Third-party packages
+3. Internal packages
 4. Relative imports
 
-### Logging
-
-- Use structured logging (JSON format)
-- Every request MUST include `requestId`
-- Log levels: `error` (failures), `warn` (degraded), `info` (key events), `debug` (detail)
-- Never log sensitive data (tokens, passwords, PII)
+### Comments
+- Public APIs MUST have JSDoc/docstring
+- Complex logic MUST have inline explanation
+- No commented-out code in commits
 
 ### Error Handling
+- Use typed errors, not generic strings
+- Always include context in error messages
+- Log errors at the boundary, not deep in the stack
 
-- Always return typed errors — never swallow errors silently
-- Use error codes from `contracts/errors.yaml`
-- Wrap errors with context: `fmt.Errorf("createUser: %w", err)` / `throw new AppError(code, message, cause)`
-- HTTP handlers: catch all errors → map to contract-defined error response format
+### Logging
+- Structured logging (JSON)
+- MUST include `requestId` in all request-scoped logs
+- Levels: debug/info/warn/error (no console.log in production code)
 
 ## 🧪 Testing Requirements
 
-- New API endpoint → MUST have contract test
-- Business logic → MUST have unit test
-- Modified existing API → MUST update contract + related tests
-- Core module test coverage: >80%
-- Run `npm test` / `go test ./...` before committing
+- New APIs MUST have contract tests
+- Business logic MUST have unit tests
+- Modifying existing APIs MUST update contracts + related tests
+- Coverage floor: core modules > 80%
 
-## 📁 Current Project Structure
-
-<!-- Keep this updated as the project evolves -->
+## 📁 Project Structure
+<!-- Current directory layout with per-directory responsibility notes -->
 
 ```
-{project-root}/
-├── contracts/               # Aegis contracts (source of truth)
-│   ├── api-spec.yaml
-│   ├── shared-types.ts
-│   ├── events.schema.json
-│   └── errors.yaml
-├── docs/designs/            # Design Briefs
-├── src/                     # Source code
-├── tests/                   # Test files
-├── docker-compose.yml       # Development
-├── docker-compose.integration.yml  # Integration testing
-└── CLAUDE.md               # This file
+src/
+├── controllers/    # HTTP handlers — thin, delegates to services
+├── services/       # Business logic
+├── repositories/   # Data access layer
+├── middleware/      # Express/Koa middleware
+├── utils/          # Pure utility functions
+└── types/          # TypeScript type definitions
 ```
 
 ## 🔗 Dependencies & Contracts
 
-- **API Contract:** `contracts/api-spec.yaml` — read this before implementing any endpoint
-- **Shared Types:** `contracts/shared-types.ts` — import types from here
-- **Error Codes:** `contracts/errors.yaml` — use defined codes only
-- **Event Schema:** `contracts/events.schema.json` — for async events
+- API Contract: `contracts/api-spec.yaml`
+- Shared Types: `contracts/shared-types.ts`
+- Error Codes: `contracts/errors.yaml`
 
 ## 🐛 Known Issues & Gaps
+<!-- Auto-synced from Gap Registry -->
 
-<!-- Synced from Gap Registry. Update when gaps are resolved or new ones discovered. -->
+## 📝 Recent Decisions
+<!-- Last 5 design decisions for historical context -->
 
-- None yet
+## 🎨 Code Style
 
-## 📝 Recent Design Decisions
-
-<!-- Last 5 decisions from Design Briefs. Helps CC understand historical context. -->
-
-| Date | Decision | Rationale |
-|------|----------|-----------|
+<!-- Add language-specific authority style guides here -->
+<!-- Examples:
+- Go → Effective Go, Go Code Review Comments
+- Rust → Rust API Guidelines
+- TypeScript → typescript-eslint recommended
+- Python → PEP 8, Google Python Style Guide
+-->

@@ -1,81 +1,74 @@
-# Multi-Agent Coordination Protocol
+# Multi-Agent Protocol
+
+## The Challenge
+
+When multiple AI agents work on the same project in parallel (e.g., one on frontend, one on backend), they need coordination. Without it, they'll drift apart — building to different assumptions.
 
 ## Architecture
 
 ```
                  ┌──────────────┐
-                 │  Lead (Forge) │
-                 │ Holds Contract│
+                 │  Lead Agent   │
+                 │ (Forge)       │
+                 │ Holds contract│
                  └──────┬───────┘
                         │
            ┌────────────┼────────────┐
            │            │            │
      ┌─────▼─────┐ ┌───▼───┐ ┌─────▼─────┐
-     │ CC-Frontend│ │Contract│ │ CC-Backend │
-     │ (Agent A)  │ │  Repo  │ │ (Agent B)  │
+     │  Agent A   │ │Contract│ │  Agent B   │
+     │ (Frontend) │ │  Repo  │ │ (Backend)  │
      └───────────┘ └───────┘ └───────────┘
 ```
 
 ## Rules
 
-1. **Same contract, same truth.** Both agents receive identical contract files. Neither can modify them unilaterally.
+### 1. Shared Contract, No Direct Communication
+- All agents receive the same contract files
+- Agents never communicate directly with each other
+- All coordination goes through the lead agent + contract
 
-2. **No direct communication.** Agents never talk to each other. All coordination goes through the contract + lead.
+### 2. No Unilateral Contract Changes
+- Any agent needing a contract change must file a Change Request
+- Lead reviews, approves, and propagates the change
+- Other agents are notified of the change before continuing
 
-3. **Contract changes require approval.** If an agent needs to change the contract, it writes a Change Request. Lead reviews, updates contract, notifies both agents.
-
-4. **Recommended sequence:**
-   ```
-   contract → backend → contract test → frontend → integration test
-   ```
-   Backend goes first because frontend depends on real API behavior. But both can start in parallel if the contract is solid.
-
-5. **Backend agent rules:**
-   - Implement exactly what the contract defines (no extra endpoints, no missing fields)
-   - Write contract tests that validate responses against api-spec.yaml
-   - If a design gap is found, document it — don't guess
-
-6. **Frontend agent rules:**
-   - Import all types from `contracts/shared-types.ts`
-   - During development, mock API using contract-defined schemas
-   - Do not invent response formats
-   - If contract feels incomplete, file a Change Request
-
-7. **Integration handoff:**
-   - Backend completes → lead runs contract tests → green
-   - Frontend completes → lead connects to real backend → integration test
-   - Both green → E2E test → PR ready
-
-## Contract Change Request Format
-
-```markdown
-# Contract Change Request
-
-**Requested by:** {agent name}
-**Date:** {YYYY-MM-DD}
-**Affects:** {endpoint(s) / schema(s)}
-
-## Current Contract
-{What the contract currently says}
-
-## Proposed Change
-{What should change}
-
-## Reason
-{Why the change is needed — what doesn't work with current contract}
-
-## Impact
-- Backend: {needs to change X}
-- Frontend: {needs to change Y}
-- Tests: {which tests need updating}
+### 3. Recommended Implementation Order
+```
+Contract defined
+  → Backend implements API
+  → Contract tests verify backend conforms
+  → Frontend implements against contract
+  → Integration test validates both sides
+  → E2E test validates user flows
 ```
 
-## Conflict Resolution
+### 4. Conflict Resolution
+When two agents have conflicting needs:
+- Lead evaluates both perspectives against the Design Brief
+- Contract is updated to resolve the conflict
+- Both agents receive the updated contract
 
-When agents disagree (e.g., backend says "this field should be optional" but frontend needs it required):
+## Dispatch Template
 
-1. Lead examines the Design Brief for intent
-2. Lead decides based on: user needs > API cleanliness > implementation convenience
-3. Decision is recorded in Design Brief's "Key Design Decisions" table
-4. Contract is updated authoritatively
-5. Both agents comply — no exceptions
+When dispatching to an agent in multi-agent mode, include:
+
+```markdown
+## Context
+You are working on: {module}
+Other agent is working on: {other module}
+
+## Contract (Source of Truth)
+- API: contracts/api-spec.yaml
+- Types: contracts/shared-types.ts
+- Errors: contracts/errors.yaml
+
+## ⚠️ Contract Rules
+- You MUST implement according to the contract
+- You MUST NOT change contract files directly
+- If you need a contract change, output a Change Request section at the end of your response
+
+## Your Scope
+Only modify files in: {allowed directories}
+Do NOT touch: {forbidden directories}
+```

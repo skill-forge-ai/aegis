@@ -1,62 +1,154 @@
-# Aegis — AI Full-Stack Quality Guardrails
+# Aegis — AI Development Quality Guardian
 
-> _"AI writes code at the speed of thought. Aegis makes sure the thoughts are correct."_
+> _"Move fast, but don't break the blueprint."_
 
-Contract-driven, design-first quality guardrails for AI-assisted full-stack development. Prevents project chaos at scale.
+**Aegis** (Greek: the divine shield of Zeus and Athena) is an AgentSkill for [OpenClaw](https://github.com/nicepkg/openclaw) that brings structured quality assurance to AI-assisted software development.
 
-## Problem
+AI writes code at the speed of thought. Aegis makes sure the thoughts are correct.
 
-AI-assisted development moves fast. Too fast for the design to keep up. Each coding agent sees only its own slice. Mocks pass everywhere, integration day explodes. Aegis solves this with a five-layer protection system.
+---
 
-## Five Layers
+## The Problem
+
+AI-assisted development is fast — dangerously fast. As projects grow, things quietly fall apart:
+
+- **Design gaps accumulate silently** — each AI agent sees only its slice, nobody holds the full picture
+- **Mock testing creates illusions** — frontend and backend mock each other, tests pass, integration explodes
+- **Context drifts across agents** — parallel agents develop divergent understandings of the same interface
+- **The code isn't yours** — debugging AI-generated code feels like inheriting a stranger's project
+- **Constraints are too loose** — `CLAUDE.md` alone isn't enough to prevent architectural drift
+
+## The Solution: Five-Layer Defense
 
 ```
-Design       → Design Brief before code
-Contract     → OpenAPI spec + shared types = single source of truth
-Implementation → CLAUDE.md constraints + dispatch protocol
-Verification → Contract test → Integration test → E2E test
-PM           → Gap tracking + sprint phases
+┌─────────────────────────────────────────────────────────┐
+│              Layer 5: Project Management                  │
+│           PM Tool Integration — Tracking + Gap Mgmt      │
+├─────────────────────────────────────────────────────────┤
+│              Layer 4: Verification                        │
+│      Contract Test → Integration Test → E2E Test         │
+├─────────────────────────────────────────────────────────┤
+│              Layer 3: Implementation                      │
+│   CLAUDE.md Constraints + Dispatch Protocol + Review     │
+├─────────────────────────────────────────────────────────┤
+│              Layer 2: Contract                            │
+│      API Spec + Shared Types + Event Schema              │
+├─────────────────────────────────────────────────────────┤
+│              Layer 1: Design                              │
+│           Design Brief + Architecture Doc                │
+└─────────────────────────────────────────────────────────┘
 ```
+
+Each layer addresses a specific failure mode. Together, they form a complete quality shield.
 
 ## Quick Start
 
+### 1. Install the Skill
+
+Copy this skill into your OpenClaw workspace:
+
 ```bash
-# Initialize Aegis structure in your project
-bash scripts/init-project.sh /path/to/your/project
+# Clone into your OpenClaw skills directory
+git clone https://github.com/skillforge-ai/aegis.git ~/.openclaw/workspace/skills/aegis
 ```
 
-This creates `contracts/`, `docs/designs/`, `CLAUDE.md`, and `docker-compose.integration.yml`.
+### 2. Initialize a Project
 
-## Usage
+```bash
+# Run the init script in your project root
+bash ~/.openclaw/workspace/skills/aegis/scripts/init-project.sh /path/to/your/project
+```
 
-This is an [OpenClaw](https://openclaw.ai) AgentSkill. Install it in your OpenClaw workspace and it activates automatically when relevant tasks are detected.
+This creates:
+```
+your-project/
+├── contracts/
+│   ├── api-spec.yaml          # OpenAPI 3.1 spec
+│   ├── shared-types.ts        # Shared type definitions
+│   └── errors.yaml            # Error code definitions
+├── docs/
+│   └── designs/               # Design Briefs go here
+└── CLAUDE.md                  # Enhanced with Aegis constraints
+```
 
-The `SKILL.md` file contains the full workflow documentation.
+### 3. Start Building
 
-## Structure
+Follow the workflow:
 
 ```
-aegis-skill/
-├── SKILL.md                    # Skill definition + workflow
-├── templates/                  # Project templates
-│   ├── design-brief.md         # Design Brief template
-│   ├── implementation-summary.md
-│   ├── claude-md.md            # Enhanced CLAUDE.md
-│   ├── api-spec-starter.yaml   # OpenAPI 3.1 starter
-│   ├── shared-types-starter.ts
-│   ├── errors-starter.yaml
-│   └── docker-compose.integration.yml
-├── scripts/                    # Automation
-│   ├── init-project.sh         # Initialize Aegis in a project
-│   ├── validate-contract.sh    # Validate contract consistency
-│   └── generate-types.sh       # Generate TypeScript types from spec
-└── references/                 # Deep-dive guides
-    ├── contract-guide.md
-    ├── dispatch-protocol.md
-    ├── multi-agent-protocol.md
-    └── testing-strategy.md
+Design Brief → Contract → Implementation → Verification → Delivery
 ```
+
+See [SKILL.md](./SKILL.md) for the complete workflow reference.
+
+## Modes
+
+| | Lite Mode | Full Mode |
+|---|-----------|-----------|
+| **Use for** | Small features, single-stack | Large features, full-stack |
+| **Design Brief** | Simplified | Complete |
+| **Contract** | ✅ Required | ✅ Required |
+| **Contract Test** | ✅ Required | ✅ Required |
+| **Integration Test** | Optional | ✅ Required |
+| **E2E Test** | Optional | ✅ Required |
+
+## Templates
+
+- [`templates/design-brief.md`](./templates/design-brief.md) — Design Brief template
+- [`templates/claude-md.md`](./templates/claude-md.md) — Enhanced CLAUDE.md template
+- [`templates/api-spec-starter.yaml`](./templates/api-spec-starter.yaml) — OpenAPI starter
+- [`templates/shared-types-starter.ts`](./templates/shared-types-starter.ts) — Shared types starter
+
+## How It Works
+
+### For Solo Developers
+Aegis acts as your quality co-pilot. Write a Design Brief before coding, define contracts for your APIs, and let contract tests catch drift before it becomes a bug.
+
+### For Multi-Agent Workflows
+Aegis becomes the coordination layer. All agents share the same contract. No agent can modify the contract unilaterally — changes go through a review process, ensuring everyone stays aligned.
+
+```
+                 ┌──────────────┐
+                 │  Lead Agent   │
+                 │ (holds contract)│
+                 └──────┬───────┘
+                        │
+           ┌────────────┼────────────┐
+           │            │            │
+     ┌─────▼─────┐ ┌───▼───┐ ┌─────▼─────┐
+     │  Frontend  │ │Contract│ │  Backend   │
+     │  Agent     │ │  Repo  │ │  Agent     │
+     └───────────┘ └───────┘ └───────────┘
+```
+
+## Integration
+
+Aegis works with your existing tools:
+
+| Tool | Integration |
+|------|-------------|
+| **OpenClaw** | Native AgentSkill |
+| **Claude Code** | Enhanced CLAUDE.md + dispatch constraints |
+| **Playwright** | E2E verification layer |
+| **Jira / Linear / GitHub Projects** | PM adapter (pluggable) |
+| **GitHub Actions / GitLab CI** | CI pipeline templates |
+
+## Philosophy
+
+1. **Contract-first** — Define the interface before writing the implementation
+2. **Mock only at the bottom** — Unit tests can mock; everything above uses real services
+3. **Gaps are first-class citizens** — Track them, triage them, resolve them
+4. **Design Briefs are for humans** — AI writes code fast; humans need to understand what's being built
+5. **Progressive strictness** — Lite mode for small stuff, Full mode for critical paths
+
+## Contributing
+
+Contributions welcome! Please read [CONTRIBUTING.md](./CONTRIBUTING.md) before submitting a PR.
 
 ## License
 
-MIT
+[MIT](./LICENSE)
+
+---
+
+_Development under Aegis — AI helps you build, Aegis makes sure it stands._

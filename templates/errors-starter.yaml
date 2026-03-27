@@ -1,51 +1,50 @@
-# Error Code Registry
-# All error codes used in API responses. Implementations MUST use these codes.
-# Format: CODE: { message, httpStatus, description }
+# errors.yaml — Unified Error Code Registry
+#
+# All error codes used in the project MUST be defined here.
+# Format: {DOMAIN}_{ERROR_NAME}
+#
+# ⚠️ Do not modify without going through Contract Change Protocol.
 
 errors:
-  # --- System Errors (SYS-xxx) ---
-  SYS_INTERNAL:
+  # === System Errors ===
+  SYSTEM_INTERNAL:
+    status: 500
     message: "Internal server error"
-    httpStatus: 500
     description: "Unexpected server error. Check logs with requestId."
 
-  SYS_NOT_FOUND:
+  SYSTEM_NOT_FOUND:
+    status: 404
     message: "Resource not found"
-    httpStatus: 404
-    description: "The requested resource does not exist."
 
-  SYS_BAD_REQUEST:
+  SYSTEM_BAD_REQUEST:
+    status: 400
     message: "Bad request"
-    httpStatus: 400
-    description: "Request body or parameters are malformed."
 
-  SYS_UNAUTHORIZED:
-    message: "Unauthorized"
-    httpStatus: 401
-    description: "Missing or invalid authentication credentials."
+  SYSTEM_UNAUTHORIZED:
+    status: 401
+    message: "Authentication required"
 
-  SYS_FORBIDDEN:
-    message: "Forbidden"
-    httpStatus: 403
-    description: "Authenticated but insufficient permissions."
+  SYSTEM_FORBIDDEN:
+    status: 403
+    message: "Insufficient permissions"
 
-  SYS_CONFLICT:
-    message: "Conflict"
-    httpStatus: 409
-    description: "Resource already exists or state conflict."
-
-  SYS_RATE_LIMITED:
+  SYSTEM_RATE_LIMITED:
+    status: 429
     message: "Too many requests"
-    httpStatus: 429
-    description: "Rate limit exceeded. Retry after Retry-After header value."
 
-  SYS_VALIDATION:
+  SYSTEM_VALIDATION:
+    status: 422
     message: "Validation error"
-    httpStatus: 422
-    description: "Request data failed validation. Check error details."
+    description: "Request body failed validation. Check error.details for specifics."
 
-  # --- Domain Errors (add project-specific codes below) ---
-  # BILLING_CARD_DECLINED:
-  #   message: "Card declined"
-  #   httpStatus: 402
-  #   description: "Payment method was declined by the processor."
+  # === Domain Errors ===
+  # Add project-specific error codes below.
+  #
+  # Example:
+  # USER_DUPLICATE_EMAIL:
+  #   status: 409
+  #   message: "Email already registered"
+  #
+  # AUTH_TOKEN_EXPIRED:
+  #   status: 401
+  #   message: "Authentication token has expired"

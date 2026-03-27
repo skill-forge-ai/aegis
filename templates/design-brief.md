@@ -1,25 +1,15 @@
 # [Feature Name] Design Brief
-
-> **Aegis ID:** AEGIS-{project}-{seq}
-> **Author:** {name}
-> **Date:** {YYYY-MM-DD}
-> **Status:** Draft | In Review | Approved
-> **Mode:** Lite | Full
-
----
+# Aegis ID: AEGIS-{project}-{seq}
 
 ## Problem Statement
-
-What problem does this solve? Why now? (1-3 sentences)
+<!-- What problem does this solve? Why now? (1-3 sentences) -->
 
 ## Architecture Overview
-
-<!-- Mermaid or ASCII diagram. Standard: an engineer unfamiliar with the project
-     can sketch the system after reading this section. -->
+<!-- Mermaid or ASCII diagram. A newcomer should be able to sketch the system after reading this. -->
 
 ```mermaid
 graph TD
-    A[Module A] --> B[Module B]
+    A[Component A] --> B[Component B]
     B --> C[Database]
 ```
 
@@ -27,47 +17,42 @@ graph TD
 
 | Decision | Choice | Rationale | Alternatives Considered |
 |----------|--------|-----------|------------------------|
-| Database | PostgreSQL | ACID compliance needed for billing | MongoDB (flexible but weak txn), DynamoDB (too opinionated) |
+| | | | |
 
 ## Module Boundaries
 
 ### Module A
-- **Responsibility:** ...
-- **Exposes:** `POST /api/xxx`, `GET /api/yyy`
-- **Depends on:** Module B (via REST), Database (direct)
-- **Communication rule:** Only through defined interfaces
+- **Responsibility:**
+- **Exposed Interface:**
+- **Dependencies:**
 
 ### Module B
-- **Responsibility:** ...
-- **Exposes:** Internal service methods
-- **Depends on:** External API X
+- **Responsibility:**
+- **Exposed Interface:**
+- **Dependencies:**
+
+**Communication Rules:** Modules communicate only through defined interfaces.
 
 ## API Surface (Summary)
+<!-- Key endpoints — detailed definitions go in contracts/ -->
 
-Key interfaces (detailed definitions in `contracts/api-spec.yaml`):
-
-- `POST /api/xxx` — Create resource. Input: `{...}`, Output: `{...}`
-- `GET /api/yyy` — List resources. Paginated.
-- WebSocket `event:zzz` — Triggered when ...
+- `POST /api/xxx` — Description, input/output summary
+- `GET /api/yyy` — Description, input/output summary
 
 ## Known Gaps & Open Questions
 
-- [ ] **[blocking]** Gap 1: Description + impact scope + urgency
-- [ ] **[non-blocking]** Gap 2: Description + impact scope + urgency
-
-## Testing Strategy
-
-| Layer | What | How |
-|-------|------|-----|
-| Unit | Business logic in Module A | Jest/Go test, mocking allowed |
-| Contract | API responses match spec | OpenAPI validator against live responses |
-| Integration | Module A ↔ Module B ↔ DB | docker-compose, real services |
-| E2E | User flows | playwright-forge |
+- [ ] **[blocking]** Gap 1: Description + impact
+- [ ] **[non-blocking]** Gap 2: Description + impact
 
 ## Debugging Guide
 
-- **Logs:** `{location}`, search for `requestId=xxx`
-- **State query:** `GET /admin/debug/xxx`
-- **Common failures:**
-  - Symptom → Likely cause → Fix
-  - Symptom → Likely cause → Fix
+- **Logs:** Location, key log keywords
+- **State inspection:** How to check system state
+- **Common failures:** Failure mode → diagnosis path
+
+## Testing Strategy
+
+- **Unit tests:** What to cover
+- **Contract tests:** Which APIs
+- **Integration tests:** Which flows
+- **E2E tests:** Which scenarios
