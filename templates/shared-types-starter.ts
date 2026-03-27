@@ -1,7 +1,9 @@
 // contracts/shared-types.ts
 // ⚠️ Single source of truth for shared type definitions.
 // Keep in sync with api-spec.yaml.
-// When using code generation, mark as AUTO-GENERATED.
+//
+// If using code generation (e.g. .aegis/generate-types.sh), mark as AUTO-GENERATED.
+// Otherwise, maintain this file manually — it IS the contract.
 
 // === Base Types ===
 

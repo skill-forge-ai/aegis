@@ -129,6 +129,25 @@ detect() {
     has_docker="true"
   fi
 
+  # --- Database detection ---
+  local databases=()
+  # Check common dependency files for database drivers
+  local dep_files=("$PROJECT_PATH/package.json" "$PROJECT_PATH/pyproject.toml" "$PROJECT_PATH/requirements.txt" "$PROJECT_PATH/go.mod" "$PROJECT_PATH/Cargo.toml" "$PROJECT_PATH/Gemfile")
+  local all_deps=""
+  for df in "${dep_files[@]}"; do
+    [ -f "$df" ] && all_deps+=" $(cat "$df")"
+  done
+  # Also check docker-compose for existing DB services
+  for dc in "$PROJECT_PATH/docker-compose.yml" "$PROJECT_PATH/docker-compose.yaml"; do
+    [ -f "$dc" ] && all_deps+=" $(cat "$dc")"
+  done
+
+  if echo "$all_deps" | grep -qi "mongo\|pymongo\|mongoose\|mongodb"; then databases+=("mongodb"); fi
+  if echo "$all_deps" | grep -qi "redis\|ioredis\|aioredis\|redis-py"; then databases+=("redis"); fi
+  if echo "$all_deps" | grep -qi "mysql\|mysqlclient\|mysql2\|mariadb"; then databases+=("mysql"); fi
+  if echo "$all_deps" | grep -qi "postgres\|psycopg\|pg \|sequelize.*postgres\|prisma.*postgres\|asyncpg\|sqlx.*postgres"; then databases+=("postgresql"); fi
+  if echo "$all_deps" | grep -qi "sqlite\|better-sqlite\|rusqlite"; then databases+=("sqlite"); fi
+
   # --- IaC ---
   local iac=()
   if [ -f "$PROJECT_PATH/cdk.json" ]; then
@@ -146,6 +165,7 @@ detect() {
   echo "  \"languages\": [$(printf '"%s",' "${langs[@]}" | sed 's/,$//')],"
   echo "  \"frameworks\": [$(printf '"%s",' "${frameworks[@]}" 2>/dev/null | sed 's/,$//')],"
   echo "  \"packageManagers\": [$(printf '"%s",' "${pkg_managers[@]}" 2>/dev/null | sed 's/,$//')],"
+  echo "  \"databases\": [$(printf '"%s",' "${databases[@]}" 2>/dev/null | sed 's/,$//')],"
   echo "  \"monorepo\": $is_monorepo,"
   echo "  \"docker\": $has_docker,"
   echo "  \"iac\": [$(printf '"%s",' "${iac[@]}" 2>/dev/null | sed 's/,$//')]"

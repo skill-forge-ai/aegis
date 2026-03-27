@@ -240,7 +240,13 @@ HOOK_CONTENT+="
 # --- Aegis Contract Validation ---
 if [ -d contracts/ ]; then
   echo '  [Aegis] Contract validation...'
-  bash \"$SCRIPT_DIR/validate-contract.sh\" \"\$(git rev-parse --show-toplevel)\" 2>/dev/null || { echo '❌ Contract validation failed'; ERRORS=\$((ERRORS+1)); }
+  # Use project-local .aegis/ copy (portable) or fallback to validate inline
+  VALIDATE_SCRIPT=\"\$(git rev-parse --show-toplevel 2>/dev/null)/.aegis/validate-contract.sh\"
+  if [ -f \"\$VALIDATE_SCRIPT\" ]; then
+    bash \"\$VALIDATE_SCRIPT\" \"\$(git rev-parse --show-toplevel)\" 2>/dev/null || { echo '❌ Contract validation failed'; ERRORS=\$((ERRORS+1)); }
+  else
+    echo '  ⚠️  .aegis/validate-contract.sh not found — run init-project.sh to install'
+  fi
 fi
 "
 
@@ -473,17 +479,31 @@ GL_GO
   fi
 
   if has_lang "typescript" || has_lang "javascript"; then
-    cat >> "$CI_FILE" << 'GL_JS'
+    # Detect package manager for GitLab CI
+    GL_PKG_INSTALL="npm ci"
+    GL_PKG_RUN="npx"
+    if echo "$STACK_JSON" | grep -q '"pnpm"'; then
+      GL_PKG_INSTALL="corepack enable && pnpm install --frozen-lockfile"
+      GL_PKG_RUN="pnpm exec"
+    elif echo "$STACK_JSON" | grep -q '"yarn"'; then
+      GL_PKG_INSTALL="corepack enable && yarn install --immutable"
+      GL_PKG_RUN="yarn"
+    fi
+
+    cat >> "$CI_FILE" << GL_JS_EOF
 aegis-js-lint:
   stage: aegis-lint
   image: node:20
   script:
-    - npm ci
-    - npx eslint --max-warnings 0 .
-    - npx prettier --check .
-    - npx tsc --noEmit || true
+    - $GL_PKG_INSTALL
+    - $GL_PKG_RUN eslint --max-warnings 0 .
+    - $GL_PKG_RUN prettier --check .
+GL_JS_EOF
 
-GL_JS
+    if has_lang "typescript"; then
+      echo "    - $GL_PKG_RUN tsc --noEmit" >> "$CI_FILE"
+    fi
+    echo "" >> "$CI_FILE"
   fi
 
   if has_lang "python"; then
