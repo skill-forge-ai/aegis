@@ -43,16 +43,43 @@ Each layer addresses a specific failure mode. Together, they form a complete qua
 
 ## Quick Start
 
-### 1. Install the Skill
+### Option A: Claude Code (CC) Users
 
-Copy this skill into your OpenClaw workspace:
+```bash
+# One-liner: clone the cc-skill folder into your CC skills directory
+git clone https://github.com/skill-forge-ai/aegis.git /tmp/aegis-clone \
+  && cp -r /tmp/aegis-clone/cc-skill ~/.claude/skills/aegis \
+  && rm -rf /tmp/aegis-clone
+
+# Verify installation
+ls ~/.claude/skills/aegis/SKILL.md
+```
+
+Or manually:
+1. Download/clone this repo
+2. Copy `cc-skill/` → `~/.claude/skills/aegis/`
+3. Done — Claude Code will auto-detect the skill
+
+Then initialize Aegis in your project:
+```bash
+bash ~/.claude/skills/aegis/scripts/init-project.sh /path/to/your/project
+```
+
+### Option B: OpenClaw Users
 
 ```bash
 # Clone into your OpenClaw skills directory
-git clone https://github.com/skillforge-ai/aegis.git ~/.openclaw/workspace/skills/aegis
+git clone https://github.com/skill-forge-ai/aegis.git ~/.openclaw/workspace/skills/aegis
 ```
 
-### 2. Initialize a Project
+### Option C: Other Agents (Codex, Gemini CLI, Cursor, etc.)
+
+Any agent that supports the AgentSkill spec can use Aegis:
+1. Clone the repo or copy the `cc-skill/` folder to your agent's skill path
+2. Point your agent at the `SKILL.md` file
+3. Run `init-project.sh` on your project
+
+### Initialize a Project
 
 ```bash
 # Run the init script in your project root
@@ -127,11 +154,11 @@ Aegis works with your existing tools:
 
 | Tool | Integration |
 |------|-------------|
-| **OpenClaw** | Native AgentSkill |
-| **Claude Code** | Enhanced CLAUDE.md + dispatch constraints |
+| **Claude Code** | Native skill (`cc-skill/`) — copy to `~/.claude/skills/aegis/` |
+| **OpenClaw** | Native AgentSkill (full repo) |
+| **Codex / Gemini CLI / Cursor** | Compatible via AgentSkill spec |
 | **Playwright** | E2E verification layer |
-| **Jira / Linear / GitHub Projects** | PM adapter (pluggable) |
-| **GitHub Actions / GitLab CI** | CI pipeline templates |
+| **GitHub Actions / GitLab CI** | CI pipeline templates (auto-generated) |
 
 ## Philosophy
 
