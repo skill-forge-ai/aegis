@@ -218,3 +218,14 @@ A story cannot close until all test subtasks pass.
 - `references/dispatch-protocol.md` — Full dispatch prompt template
 - `references/multi-agent-protocol.md` — Multi-agent coordination rules
 - `references/testing-strategy.md` — Testing strategy with examples
+
+## CC Skill (Claude Code Side)
+
+Aegis operates at two levels:
+- **This skill (OpenClaw):** Flow orchestration — when to design, when to contract, when to verify
+- **CC skill (`cc-skill/SKILL.md`):** Implementation discipline — CC auto-enforces contract rules while coding
+
+Install the CC skill to `~/.claude/skills/aegis/SKILL.md` so CC has persistent Aegis awareness.
+Without it, constraints only exist when manually injected into dispatch prompts — easy to forget, easy to skip.
+
+**铁律：** CC 版 Aegis 是铁律级规则。项目有 `contracts/` 目录时无条件生效。
