@@ -25,6 +25,39 @@ description: >
 
 ---
 
+## Phase 0: Workspace Architecture Detection
+
+Before starting the Aegis workflow, detect the project architecture to choose the right contract strategy.
+
+### Auto-Detection
+
+Scan the workspace for indicators:
+- Both `frontend/`/`client/`/`web/` AND `backend/`/`server/`/`api/` directories → **Monorepo**
+- `package.json` with workspaces containing both frontend and backend → **Monorepo**
+- Only one side present (pure frontend or pure backend) → **Split Workspace**
+
+### If Split Workspace detected, ask the human:
+```
+Detected: This workspace contains only {frontend|backend} code.
+Where does the other side live?
+
+(a) Another repo managed by the same agent (I can access it)
+(b) Another repo managed by a different agent/workspace (I cannot access it)
+(c) This is actually a monorepo (I missed something)
+```
+
+### Architecture Modes
+
+| Mode | Contract Location | Sync Method |
+|------|------------------|-------------|
+| **Monorepo** | `contracts/` in project root | Direct (same repo) |
+| **Multi-Repo, Single Agent** | Lead workspace's `contracts/`, copied to each repo | Copy before dispatch |
+| **Cross-Agent, Cross-Workspace** | Dedicated contract repository | Git submodule / package / lead copy-sync |
+
+**Cross-Workspace:** Contract lives in an independent Git repo. Each agent's workspace integrates it as read-only. Contract Change Requests go through the Lead who has merge rights. See `references/multi-agent-protocol.md` for the full protocol.
+
+---
+
 ## Phase 1: Design
 
 Before any non-trivial feature, create a Design Brief:
@@ -165,7 +198,10 @@ When multiple agents work on the same project:
 - Each agent reads contracts before starting
 - Contracts are the synchronization point — not code
 - Change Requests prevent concurrent contract modifications
-- Reference: `references/multi-agent-protocol.md`
+
+**Cross-Workspace:** When agents operate in separate workspaces, contract lives in a dedicated repository. Each agent integrates via submodule/package/copy-sync and treats `contracts/` as read-only. Integration testing is orchestrated externally.
+
+Reference: `references/multi-agent-protocol.md`
 
 ## File Structure
 

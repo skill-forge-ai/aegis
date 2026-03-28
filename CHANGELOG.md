@@ -2,6 +2,16 @@
 
 All notable changes to Aegis will be documented in this file.
 
+## [1.2.0] - 2026-03-28
+
+### Added
+- **Workspace Architecture Detection** (CC skill) — Phase 0 auto-detection of project architecture before entering Aegis workflow. Detects monorepo/split/cross-agent and prompts human when ambiguous.
+- **Cross-Workspace Contract Protocol** (CC skill) — dedicated contract repository pattern, three integration methods (submodule/package/copy-sync), cross-workspace dispatch template, contract test isolation strategy.
+- Updated multi-agent protocol reference with full cross-workspace section.
+
+### Fixed
+- CC skill (`cc-skill/`) now includes all v1.1.0 features that were previously only in the OpenClaw SKILL.md.
+
 ## [1.1.0] - 2026-03-28
 
 ### Added
