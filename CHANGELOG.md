@@ -2,6 +2,22 @@
 
 All notable changes to Aegis will be documented in this file.
 
+## [1.3.1] - 2026-03-30
+
+### Improved
+- **Testing strategy reference** — complete rewrite with concrete code examples:
+  - Frontend: Vitest + RTL + MSW patterns (API client test, hook test, component test, MSW handler setup)
+  - Backend: Go and TypeScript/Node integration test examples with real HTTP server + real DB
+  - Language-specific tool recommendations (Go, TS, Python, Rust, Java)
+  - Coverage matrix template for backend endpoints
+- **Design Brief template** — expanded Testing Strategy section with structured tables:
+  - Frontend test coverage checklist (API clients, hooks, components, MSW)
+  - Backend endpoint coverage matrix (200/400/404/401/mutation)
+  - DB setup requirements
+- **Testing pyramid** updated with all 5 layers (Unit → Frontend → Contract → Integration → E2E)
+- **CI pipeline order** standardized across all docs: `lint → type-check → unit → frontend-test → contract → integration → build → E2E`
+- Added principle #7: "Mock only what you don't own"
+
 ## [1.3.0] - 2026-03-30
 
 ### Added

@@ -52,7 +52,25 @@ graph TD
 
 ## Testing Strategy
 
-- **Unit tests:** What to cover
-- **Contract tests:** Which APIs
-- **Integration tests:** Which flows
-- **E2E tests:** Which scenarios
+<!-- ⚠️ Design Review Gate: Full-stack features CANNOT be approved without a complete testing strategy -->
+
+### Frontend Tests
+<!-- Required when feature touches frontend. Skip section if backend-only. -->
+- **API clients to test:** <!-- list each API function that needs tests -->
+- **Hooks to test:** <!-- list each data-fetching hook -->
+- **Key components:** <!-- list components needing render tests (with states: data/loading/error) -->
+- **MSW coverage:** <!-- list endpoints to mock, note any special error scenarios -->
+
+### Backend Integration Tests (HTTP E2E)
+<!-- Required for every API endpoint this feature adds or modifies -->
+
+| Endpoint | Happy (200) | Bad Request (400) | Not Found (404) | Auth (401) | Mutation Verify | Notes |
+|----------|-------------|-------------------|-----------------|------------|-----------------|-------|
+| | | | | | | |
+
+- **Database setup:** <!-- what seed data / migrations needed for tests -->
+
+### E2E Flows
+<!-- Critical user journeys that need browser-level verification -->
+- [ ] Flow 1: description
+- [ ] Flow 2: description
