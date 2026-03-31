@@ -172,7 +172,21 @@ Unit Test         ← Mock external deps, test pure logic
 - **Every endpoint** must have: happy path (200) + bad request (400) + not found (404) + auth failure (401)
 - **Real database** — isolated test DB, not mocks. Transactions or migrations for clean state.
 - **Mutation verification** — POST/PUT/DELETE → GET to confirm state change
-- **CI pipeline:** `lint → type-check → unit → frontend-test → contract → integration → build → E2E`
+- **CI pipeline:** `lint → type-check → unit → frontend-test → contract → integration → route-coverage → build → E2E`
+
+### Consumer-Driven Route Coverage
+
+Integration tests must cover what the frontend calls, not just what the backend implements.
+
+- **Full mode:** `verify-route-coverage.sh` cross-references frontend API calls with backend routes. Every consumer route needs a backend handler + integration test.
+- **Degraded mode:** If no frontend manifest or scannable frontend code exists, CI warns but does not fail. Provider-driven tests remain the baseline.
+- **Cross-workspace:** Frontend agent exports `consumer-routes.yaml` to the contract repo. Backend CI validates coverage against it.
+- **Route manifest:** `contracts/route-manifest.yaml` — declares every API route the frontend consumes. Auto-generated or manual.
+
+Run after integration tests in CI:
+```bash
+bash scripts/verify-route-coverage.sh <project-path>
+```
 
 ### Test Strategy = Design Artifact
 
@@ -238,14 +252,16 @@ Reference: `references/multi-agent-protocol.md`
 │   ├── errors-starter.yaml
 │   ├── contract-test-example.ts
 │   ├── docker-compose.integration.yml
-│   └── implementation-summary.md
+│   ├── implementation-summary.md
+│   └── route-manifest-starter.yaml  # Consumer route manifest template
 ├── scripts/                     # Automation
 │   ├── init-project.sh          # Initialize Aegis in a project
 │   ├── setup-guardrails.sh      # Pre-commit + CI setup
 │   ├── detect-stack.sh          # Auto-detect language/framework
 │   ├── validate-contract.sh     # Validate contract consistency
 │   ├── gap-report.sh            # Design Brief vs implementation gaps
-│   └── generate-types.sh        # Generate types from OpenAPI spec
+│   ├── generate-types.sh        # Generate types from OpenAPI spec
+│   └── verify-route-coverage.sh # Consumer-driven route coverage check
 └── references/                  # Deep-dive guides
     ├── contract-first-guide.md
     ├── testing-strategy.md

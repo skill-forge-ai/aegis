@@ -39,6 +39,18 @@ graph TD
 - `POST /api/xxx` — Description, input/output summary
 - `GET /api/yyy` — Description, input/output summary
 
+## Frontend API Surface
+<!-- ⚠️ Required for full-stack features. Maps every frontend API call to its backend handler.
+     This table drives consumer-driven integration testing (Aegis Layer 4). -->
+
+| Method | Path | Description | Backend Handler |
+|--------|------|-------------|-----------------|
+| GET | /api/example | Example endpoint | ExampleHandler.List |
+| POST | /api/example | Create example | ExampleHandler.Create |
+
+<!-- After filling this table, generate contracts/route-manifest.yaml:
+     bash scripts/verify-route-coverage.sh <project-path> -->
+
 ## Known Gaps & Open Questions
 
 - [ ] **[blocking]** Gap 1: Description + impact

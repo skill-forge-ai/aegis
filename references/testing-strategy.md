@@ -339,6 +339,111 @@ This is a **Design Review gate** — a Design Brief without a complete testing s
 
 ---
 
+## Consumer-Driven Testing
+
+### The Problem
+
+Provider-driven integration tests verify what the backend built. But if the frontend calls `GET /customers` and the backend never registered that route, all tests pass — the app is broken.
+
+**Real-world incident:** A Stripe Billing Platform had 5 missing list endpoints (GET /customers, GET /subscriptions, GET /invoices, GET /plans, GET /checkout/sessions). All integration tests passed because they only tested backend-implemented endpoints.
+
+### The Solution: Consumer-Driven Route Coverage
+
+Instead of asking "did the backend test its endpoints?", ask "does the backend serve every endpoint the frontend calls?"
+
+```
+Frontend code scan → extract all API calls → cross-reference with backend routes → flag gaps
+```
+
+### Architecture-Specific Approaches
+
+#### Monorepo
+
+Scan both sides directly:
+
+```bash
+# Scans frontend/ for API calls, backend/ for route registrations
+bash scripts/verify-route-coverage.sh /path/to/project
+```
+
+The script automatically finds frontend API patterns (fetch, axios, api clients) and backend route registrations (Express, Gin, FastAPI, etc.).
+
+#### Multi-Repo, Single Agent
+
+The Lead agent scans the frontend repo and generates a route manifest:
+
+```bash
+# 1. Lead scans frontend repo
+bash scripts/verify-route-coverage.sh /path/to/frontend-repo
+# This produces a list of consumer routes
+
+# 2. Lead copies manifest to backend repo
+cp contracts/route-manifest.yaml /path/to/backend-repo/contracts/
+
+# 3. Backend CI validates coverage
+bash scripts/verify-route-coverage.sh /path/to/backend-repo --manifest contracts/route-manifest.yaml
+```
+
+#### Cross-Agent, Cross-Workspace
+
+The frontend agent MUST export a consumer manifest:
+
+```yaml
+# contracts/consumer-routes.yaml (exported by frontend agent)
+routes:
+  - method: GET
+    path: /api/customers
+    description: Paginated customer list
+    consumer: frontend
+    provider: backend
+  - method: POST
+    path: /api/customers
+    description: Create customer
+    consumer: frontend
+    provider: backend
+```
+
+Backend CI reads this manifest and validates that every route has a handler:
+
+```bash
+# Backend CI step
+bash scripts/verify-route-coverage.sh . --manifest contracts/consumer-routes.yaml
+```
+
+### Degradation Strategy
+
+When the frontend API surface cannot be obtained (no manifest, no scannable frontend code):
+
+| Situation | Behavior | Exit Code |
+|-----------|----------|-----------|
+| Full coverage data available | Cross-reference consumer → provider, fail on gaps | 0 (pass) or 1 (gaps) |
+| No frontend data available | ⚠️ WARNING, fallback to provider-driven tests | 0 (degraded) |
+| Frontend found, no backend | ✗ ERROR, backend is missing | 1 (error) |
+
+**Key principle:** Degraded mode outputs a WARNING, **never** a failure. Existing projects without frontend manifests continue working.
+
+### Route Manifest Format
+
+```yaml
+# contracts/route-manifest.yaml
+routes:
+  - method: GET
+    path: /api/customers
+    description: Paginated customer list
+    consumer: frontend
+    provider: backend
+    tested: false  # Set to true once integration test exists
+
+metadata:
+  generated_by: verify-route-coverage.sh
+  generated_at: 2026-03-31T12:00:00Z
+  architecture_mode: monorepo  # monorepo | multi-repo | cross-workspace
+```
+
+Use template: `templates/route-manifest-starter.yaml`
+
+---
+
 ## Key Principles
 
 1. **Never mock across contract boundaries** — If frontend tests mock the API, you're testing your assumptions, not the system
@@ -348,3 +453,4 @@ This is a **Design Review gate** — a Design Brief without a complete testing s
 5. **Frontend tests are not second-class** — Same rigor as backend. Same CI gates. Same blocking power.
 6. **Test strategy is a design artifact** — Define it in the Design Brief, before writing code. Not after.
 7. **Mock only what you don't own** — Third-party APIs (Stripe, SendGrid) get mocked. Your own services don't.
+8. **Consumer drives verification** — Integration tests must cover what the frontend calls, not just what the backend implements. Use `verify-route-coverage.sh` to enforce.

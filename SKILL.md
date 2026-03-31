@@ -169,8 +169,28 @@ contracts/
 ├── api-spec.yaml          # OpenAPI 3.1 — REST API contract
 ├── shared-types.ts        # Auto-generated from api-spec (DO NOT EDIT MANUALLY)
 ├── events.schema.json     # WebSocket / async event schemas
-└── errors.yaml            # Unified error codes
+├── errors.yaml            # Unified error codes
+└── route-manifest.yaml    # Consumer-driven route coverage (auto-generated or manual)
 ```
+
+### Route Manifest (Consumer-Driven Contract Artifact)
+
+The route manifest declares every API route the frontend consumes. It bridges the gap between "what the backend implements" and "what the frontend actually calls."
+
+```yaml
+# contracts/route-manifest.yaml
+routes:
+  - method: GET
+    path: /api/customers
+    description: Paginated customer list
+    consumer: frontend
+    provider: backend
+    tested: false
+```
+
+**Generation:** Use `scripts/verify-route-coverage.sh` to auto-generate from frontend code scans, or maintain manually. In cross-workspace mode, the frontend agent exports this as `consumer-routes.yaml` into the contract repo.
+
+Use template: `templates/route-manifest-starter.yaml`
 
 ### Rules
 
@@ -267,10 +287,56 @@ Every API endpoint must have HTTP-level integration tests:
 - **Mutation verification:** POST/PUT/DELETE → GET to confirm state change
 - **CI Gate:** must pass after contract tests, before build
 
+### Consumer-Driven Integration Testing
+
+**Problem:** Provider-driven tests only verify what the backend implemented. If the frontend calls `GET /customers` but the backend never registered that route, all tests pass — but the app is broken.
+
+**Solution:** Integration tests must be driven by the consumer (frontend), not just the provider (backend).
+
+#### Three-Tier Verification
+
+| Tier | Condition | Behavior |
+|------|-----------|----------|
+| **Full** | Frontend API surface available (scan or manifest) | Cross-reference consumer → provider. Every consumer route must have a backend handler + integration test. Fail CI on gaps. |
+| **Degraded** | No frontend code or manifest found | Fallback to provider-driven tests (current behavior). CI outputs ⚠️ WARNING, exits 0. |
+| **Error** | Frontend found but no backend routes | CI fails — backend is missing entirely. |
+
+#### Route Coverage Gate
+
+Run `scripts/verify-route-coverage.sh` in CI after integration tests:
+
+```bash
+bash scripts/verify-route-coverage.sh /path/to/project
+```
+
+The script:
+1. Extracts all frontend API calls (scans for fetch/axios/api client patterns)
+2. Cross-references with backend registered routes
+3. Reports: matched / unmatched / total coverage %
+4. Exit 0 if all covered OR degraded mode; exit 1 if gaps found
+
+#### Architecture-Specific Approaches
+
+**Monorepo:** Script scans both frontend and backend code directly in the same repo.
+
+**Multi-Repo, Single Agent:** Lead scans the frontend repo, generates `contracts/route-manifest.yaml`, copies it to the backend repo. Backend CI validates coverage against the manifest.
+
+**Cross-Agent, Cross-Workspace:** Frontend agent MUST export a `consumer-routes.yaml` manifest into the contract repo. Backend CI reads this manifest and validates that every listed route has a handler + test.
+
+#### Degradation Strategy (铁律)
+
+When the frontend API surface **cannot** be obtained:
+- ⚠️ **Degraded mode** — fallback to provider-driven integration tests
+- CI outputs WARNING, **not** failure — does not block the pipeline
+- `verify-route-coverage.sh` exits 0 + prints ⚠️ WARNING
+- Log the degradation reason for traceability
+
+This ensures existing projects without frontend manifests are not broken by the upgrade.
+
 ### E2E Tests
 
 - E2E: Call playwright-forge for browser-level verification.
-- CI pipeline: `lint → type-check → unit → frontend-test → contract → integration → build → E2E`
+- CI pipeline: `lint → type-check → unit → frontend-test → contract → integration → route-coverage → build → E2E`
 
 ### Test Strategy as Design Artifact
 
@@ -321,6 +387,7 @@ A story cannot close until all test subtasks pass.
 - `scripts/detect-stack.sh <project-path>` — Detect project languages/frameworks (JSON output)
 - `scripts/validate-contract.sh <project-path>` — Validate contract consistency
 - `scripts/generate-types.sh <project-path>` — Generate shared types from OpenAPI spec
+- `scripts/verify-route-coverage.sh <project-path> [--manifest <path>]` — Consumer-driven route coverage verification
 
 ## Templates
 
@@ -331,6 +398,7 @@ A story cannot close until all test subtasks pass.
 - `templates/shared-types-starter.ts` — Shared types starter (typically auto-generated)
 - `templates/errors-starter.yaml` — Error code definition starter
 - `templates/docker-compose.integration.yml` — Integration test compose template
+- `templates/route-manifest-starter.yaml` — Route manifest starter for consumer-driven testing
 
 ## References
 

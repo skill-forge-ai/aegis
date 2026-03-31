@@ -54,6 +54,7 @@
 - Business logic MUST have unit tests
 - Modifying existing APIs MUST update contracts + related tests
 - Coverage floor: core modules > 80%
+- **Consumer-driven route coverage:** Every frontend API call MUST have a corresponding backend route + integration test. Run `bash scripts/verify-route-coverage.sh` to verify. If adding new frontend API calls, update `contracts/route-manifest.yaml`.
 
 ## 📁 Project Structure
 <!-- Current directory layout with per-directory responsibility notes -->

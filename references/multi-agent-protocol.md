@@ -179,6 +179,58 @@ In cross-workspace mode, each side runs its own contract tests independently:
 
 Integration testing requires a separate environment (e.g., docker-compose that combines both services). This is typically orchestrated by the Lead or CI, not by individual agents.
 
+## Consumer Route Manifest Exchange Protocol
+
+In cross-workspace mode, the frontend and backend cannot scan each other's code. The consumer route manifest bridges this gap.
+
+### Protocol
+
+1. **Frontend agent** extracts all API calls from its codebase and exports `consumer-routes.yaml`:
+
+```yaml
+# consumer-routes.yaml — exported by frontend agent into contract repo
+routes:
+  - method: GET
+    path: /api/customers
+    description: Paginated customer list
+    consumer: frontend
+    provider: backend
+  - method: GET
+    path: /api/customers/:id
+    description: Customer detail
+    consumer: frontend
+    provider: backend
+  - method: POST
+    path: /api/customers
+    description: Create customer
+    consumer: frontend
+    provider: backend
+```
+
+2. **Frontend agent** commits `consumer-routes.yaml` to the contract repository (or includes it in a Change Request for the Lead to merge).
+
+3. **Backend CI** reads `consumer-routes.yaml` from the contract repo and validates route coverage:
+
+```bash
+# Backend CI pipeline step (after integration tests)
+bash scripts/verify-route-coverage.sh . --manifest contracts/consumer-routes.yaml
+```
+
+4. **Lead** is notified of any gaps — unmatched routes mean the backend is missing endpoints that the frontend expects.
+
+### When to Update
+
+- Frontend agent updates `consumer-routes.yaml` whenever it adds, removes, or changes API calls
+- This is part of the Contract Change Protocol — new consumer routes may require new backend endpoints
+- Backend agent treats `consumer-routes.yaml` as a test fixture: "these are the routes I must serve"
+
+### Degradation in Cross-Workspace Mode
+
+If the frontend agent has not yet exported `consumer-routes.yaml`:
+- Backend CI runs `verify-route-coverage.sh` → finds no manifest → ⚠️ DEGRADED mode
+- CI passes with a warning, does not block
+- Lead should ensure the frontend agent exports the manifest before the next integration milestone
+
 ## Conflict Resolution
 
 When agents disagree (e.g., backend says "this field should be optional" but frontend needs it required):
